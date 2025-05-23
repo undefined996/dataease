@@ -52,6 +52,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -88,6 +89,8 @@ public class DatasetDataManage {
     private RowPermissionsApi rowPermissionsApi;
     @Resource
     private DataSourceManage dataSourceManage;
+    @Value("${dataease.inject.regex:^'.*'$}")
+    private String injectCheckRegex;
 
     private static Logger logger = LoggerFactory.getLogger(DatasetDataManage.class);
 
@@ -976,6 +979,10 @@ public class DatasetDataManage {
 
         // 搜索备选项
         if (StringUtils.isNotEmpty(request.getSearchText())) {
+            // check search text
+            if (request.getSearchText().matches(injectCheckRegex)){
+                DEException.throwException(Translator.get("i18n_sql_inject_error"));
+            }
             ChartExtFilterDTO dto = new ChartExtFilterDTO();
             DatasetTableFieldDTO field = null;
             if (ids.size() == 1) {
